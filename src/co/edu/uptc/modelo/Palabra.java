@@ -1,6 +1,6 @@
 package co.edu.uptc.modelo;
 
-public class Palabra {
+public class Palabra implements Comparable<Palabra>{
 	private String palabra;
 	private String definicion;
 	private String traduccion;
@@ -40,4 +40,14 @@ public class Palabra {
 		this.traduccion = traduccion;
 	}
 
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return "palabras: " + getPalabra() + "\tdefinicion: "+ getDefinicion() + "\ttraduccion: "+ getTraduccion();
+	}
+
+	@Override
+	public int compareTo(Palabra otraPalabra) {
+        return this.palabra.compareTo(otraPalabra.getPalabra());
+	}
 }

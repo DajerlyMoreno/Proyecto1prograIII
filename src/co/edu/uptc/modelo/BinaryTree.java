@@ -3,7 +3,7 @@ package co.edu.uptc.modelo;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class BinaryTree <T>{
+public class BinaryTree <T extends Comparable<T>>{
 	private TreeNode<T> root;
 	private Comparator<T> comparator;
 	private int aux;
@@ -28,9 +28,9 @@ public class BinaryTree <T>{
             TreeNode<T> ant = null;
             while( aux != null ){
                 ant = aux;
-                aux = comparator.compare(info, aux.getInfo()) < 0 ? aux.getLeft() : aux.getRight();
+                aux = info.compareTo(aux.getInfo()) < 0 ? aux.getLeft() : aux.getRight();
             }
-            if( comparator.compare(info, ant.getInfo()) < 0 ){
+            if( info.compareTo(ant.getInfo()) < 0 ){
                 ant.setLeft( newNode );
             }else{
                 ant.setRight( newNode );
@@ -82,5 +82,14 @@ public class BinaryTree <T>{
             list.add( node.getInfo());
         }
     }
+
+	public TreeNode<T> getRoot() {
+		return root;
+	}
+
+	public void setRoot(TreeNode<T> root) {
+		this.root = root;
+	}
+    
 
 }

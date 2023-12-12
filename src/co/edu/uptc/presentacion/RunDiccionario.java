@@ -1,29 +1,33 @@
 package co.edu.uptc.presentacion;
 
 import co.edu.uptc.GUI.GUIprincipal;
+import co.edu.uptc.logica.GestionPalabras;
 import co.edu.uptc.modelo.BinaryTree;
+import co.edu.uptc.modelo.Palabra;
 
 public class RunDiccionario {
 
 	public static void main(String[] args) {
-		GUIprincipal p = new GUIprincipal();
-//		BinaryTree<String> bt= new BinaryTree<String>((o1, o2) -> o1.compareTo(o2));
-//		
-//		bt.addNode("Ana");
-//		bt.addNode("Alicia");
-//		bt.addNode("Andres");
-//		bt.addNode("A");
-//		bt.addNode("Armando");
-//		bt.addNode("Arias");
-//		bt.addNode("Abc");
+//  	GUIprincipal p = new GUIprincipal();
+		//BinaryTree<Palabra> bt= new BinaryTree<Palabra>((o1, o2) -> o1.getPalabra().compareTo(o2.getPalabra()));
+		GestionPalabras gp = new GestionPalabras();
+		
+		gp.agregarPalabra(new Palabra("Ana", "def", "trad"));
+		gp.agregarPalabra(new Palabra("Alicia", "def", "trad"));
+		gp.agregarPalabra(new Palabra("Andres", "def", "trad"));
+		gp.agregarPalabra(new Palabra("A", "def", "trad"));
+		gp.agregarPalabra(new Palabra("Armando", "def", "trad"));
+		gp.agregarPalabra(new Palabra("Arias", "def", "trad"));
+		gp.agregarPalabra(new Palabra("Abc", "def", "trad"));
 //		bt.addNode(18);
 //		bt.addNode(46);
 //		bt.addNode(63);
 //		bt.addNode(120);
 //		bt.addNode(100);
-//		
-//		//bt.listPresort().forEach(System.out::println);
-//		bt.listInsort().forEach(System.out::println);
+		
+		// ana-alicia-a-abc-andres-armando-arias
+		//bt.listPresort().forEach(System.out::println);
+		gp.obtenerPalabras("A").forEach(System.out::println);
 		
 	}
 
