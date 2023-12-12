@@ -18,7 +18,7 @@ public class RunDiccionario {
 		gp.agregarPalabra(new Palabra("A", "def", "trad"));
 		gp.agregarPalabra(new Palabra("Armando", "def", "trad"));
 		gp.agregarPalabra(new Palabra("Arias", "def", "trad"));
-		gp.agregarPalabra(new Palabra("Abc", "def", "trad"));
+		gp.agregarPalabra(new Palabra("B", "def", "trad"));
 //		bt.addNode(18);
 //		bt.addNode(46);
 //		bt.addNode(63);
@@ -27,7 +27,7 @@ public class RunDiccionario {
 		
 		// ana-alicia-a-abc-andres-armando-arias
 		//bt.listPresort().forEach(System.out::println);
-		gp.obtenerPalabras("A").forEach(System.out::println);
+		gp.obtenerPalabras("Z").forEach(System.out::println);
 		
 	}
 

@@ -40,12 +40,17 @@ public class GestionPalabras {
     	
     	int index = letra.charAt(0) - 'A';
     	if(index == -23) {
+    		ArrayList<Palabra> todas = new ArrayList<Palabra>();
+    		for(int i = 0; i < letras.length; i ++) {
+    			todas.addAll(arboles.get(i).listInsort());
+    		}
+    		return todas;
     		
-    	}else {
-    		//return arboles.get(index).listPosort();
+    	}else if(index >= 0 && index <=26){
+    		return arboles.get(index).listInsort();
     	}
     	
-    	return arboles.get(index).listPosort();
+    	return null;
     }
 
 }
