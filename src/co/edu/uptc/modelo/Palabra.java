@@ -1,14 +1,28 @@
 package co.edu.uptc.modelo;
 
-public class Palabra implements Comparable<Palabra>{
+/**
+ * esta clase almacena la palabra, su definicion y traduccion
+ * @author DELL
+ *
+ */
+public class Palabra {
 	private String palabra;
 	private String definicion;
 	private String traduccion;
 	
+	/**
+	 * constructor vacio de la clase
+	 */
 	public Palabra() {
 		
 	}
 
+	/**
+	 * constructor de la clase, se inicializan los atributos
+	 * @param palabra
+	 * @param definicion
+	 * @param traduccion
+	 */
 	public Palabra(String palabra, String definicion, String traduccion) {
 		super();
 		this.palabra = palabra;
@@ -40,14 +54,14 @@ public class Palabra implements Comparable<Palabra>{
 		this.traduccion = traduccion;
 	}
 
+	/**
+	 * metodo que retona en forma de string la informacion de la clase
+	 */
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
 		return "palabras: " + getPalabra() + "\tdefinicion: "+ getDefinicion() + "\ttraduccion: "+ getTraduccion();
 	}
 
-	@Override
-	public int compareTo(Palabra otraPalabra) {
-        return this.palabra.compareTo(otraPalabra.getPalabra());
-	}
+
 }

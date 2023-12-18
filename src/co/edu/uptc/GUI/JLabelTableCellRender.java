@@ -3,11 +3,17 @@ package co.edu.uptc.GUI;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-
+/**
+ * clase para personalizar los jlabel de la tabla y los jareatextfiel de la misma 
+ * @author DELL
+ *
+ */
 public class JLabelTableCellRender extends DefaultTableCellRenderer {
+	
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        // Si estamos en la columna 4, y el valor es un ImageIcon
+    	Component rendererComponent = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+    	// Si estamos en la columna 4, y el valor es un ImageIcon
         if (value instanceof ImageIcon) {
             // Crear un JLabel y establecer el ImageIcon en �l
             JLabel label = new JLabel((ImageIcon) value);
@@ -18,12 +24,18 @@ public class JLabelTableCellRender extends DefaultTableCellRenderer {
 
             // Devolver el JLabel
             return label;
-        } else {
-            // Si no estamos en la columna 4 o el valor no es un ImageIcon,
-            // usar el comportamiento predeterminado del renderizador
+            
+        } else if(value instanceof String){
+            // Si el componente no es un JLabel, crear un nuevo JTextArea
+            JTextArea textArea = new JTextArea(value.toString());
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
 
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            // Devolver el JTextArea
+            return textArea;
         }
+        return rendererComponent;
+        
     }
 
 }

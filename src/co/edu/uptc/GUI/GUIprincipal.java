@@ -12,6 +12,8 @@ import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -19,6 +21,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -28,14 +31,21 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-import co.edu.uptc.logica.GestionPalabras;
+import co.edu.uptc.logica.Diccionario;
 import co.edu.uptc.modelo.Palabra;
 
-public class GUIprincipal extends JFrame implements ActionListener, MouseListener{
-	private GestionPalabras gp;
+/**
+ * clase donde semuestra las palabras del diccionario, que da accesibilidad para hacer el CRUD
+ * @author DELL
+ *
+ */
+
+public class GUIprincipal extends JFrame implements MouseListener, ActionListener{
+	private Diccionario gp;
 	private JPanel title, tabla, palabra;
 	private JLabel titulo;
 	private JTextField buscarpalabra;
@@ -43,9 +53,15 @@ public class GUIprincipal extends JFrame implements ActionListener, MouseListene
 	private JTable tablaPalabras;
 	private JScrollPane tablaScrool;
 	private JButton buscar, agregar;
+	private DefaultTableModel modeloTabla;
 	private DefaultTableCellRenderer centerRenderer;
 	
-	public GUIprincipal() {
+	/**
+	 * constructor de la clase, se inicializan los atributos y se configura la ventana
+	 * recibe un parametro de tipo GestionPalabras para que tenga palabras por defecto
+	 * @param gp
+	 */
+	public GUIprincipal(Diccionario gp) {
 		title = new JPanel();
 		tabla = new JPanel();
 		palabra = new JPanel();
@@ -57,17 +73,21 @@ public class GUIprincipal extends JFrame implements ActionListener, MouseListene
 		buscar = new JButton();
 		agregar = new JButton();
 		centerRenderer = new DefaultTableCellRenderer();
-		gp = new GestionPalabras();
+		this.gp = gp;
 		
 		setLayout(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(670, 700);
 		setLocationRelativeTo(null);
 		setTitle("Diccionario JAZ");
-		setResizable(true);
+		setIconImage(modificarTamImagen("Recursos/diccionario.png", 35, 35).getImage());
+		setResizable(false);
 		initComponents();
 	}
 
+	/**
+	 * metodo para configurar y agregar los componentes a la ventana
+	 */
 	private void initComponents() {
 		
 		Font font = new Font("Arial", Font.BOLD, 70);
@@ -89,10 +109,10 @@ public class GUIprincipal extends JFrame implements ActionListener, MouseListene
         });
 
 		buscar.setBounds(520, 10, 40, 40);
-		buscar.setIcon(modificarTamañoImagen("Recursos/buscar.jpg", 35, 35));
+		buscar.setIcon(modificarTamImagen("Recursos/buscar.jpg", 35, 35));
 		buscar.addActionListener(this);
 		agregar.setBounds(580, 10, 40, 40);
-		agregar.setIcon(modificarTamañoImagen("Recursos/agregar.png", 35, 35));
+		agregar.setIcon(modificarTamImagen("Recursos/agregar.png", 35, 35));
 		agregar.addActionListener(this);
 		palabra.setLayout(null);
 		palabra.setBounds(10, 120, 700, 50);
@@ -101,7 +121,7 @@ public class GUIprincipal extends JFrame implements ActionListener, MouseListene
 		palabra.add(agregar);
 		
 		List<String> alphabet = getAlphabet();
-		letras.addItem("Todas las letras");
+		letras.addItem("*Todas las palabras");
         for (String letter : alphabet) {
             letras.addItem(letter);
         }
@@ -109,30 +129,23 @@ public class GUIprincipal extends JFrame implements ActionListener, MouseListene
         letras.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				
+				ArrayList<Palabra> palabras = gp.obtenerPalabras((String)letras.getSelectedItem());
+				if(palabras.size() == 0) {
+					JOptionPane.showMessageDialog(null, "No hay palabras que inicien por esa letra");
+					letras.setSelectedItem(letras.getItemAt(0));
+					confiTabla(gp.obtenerPalabras((String)letras.getSelectedItem()));
+				}else {
+					confiTabla(palabras);
+				}
 			}
 		});
-        tablaScrool.setViewportView(tablaPalabras);
-        
-		tablaPalabras.setModel(modelTable());
-		tablaPalabras.setRowHeight(60);
-		tablaPalabras.addMouseListener(this);
-
-		JTableHeader header = tablaPalabras.getTableHeader();
-		header.setFont(new Font("Arial", Font.BOLD, 20));
-		header.setBackground(new Color(246, 108, 9));
-		header.setForeground(Color.black);
-
-		tablaPalabras.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
-		tablaPalabras.getColumnModel().getColumn(5).setCellRenderer(new JLabelTableCellRender());
-
-		TableColumnModel columnModel = tablaPalabras.getColumnModel();
-		columnModel.getColumn(5).setResizable(false);
-        
+       
+		confiTabla(gp.obtenerPalabras((String)letras.getSelectedItem()));
+		
 		tabla.setLayout(null);
+		tabla.setBounds(10, 190, 650, 500);
         tabla.add(letras);
-        tabla.setBounds(10, 190, 650, 500);
+        tabla.add(tablaScrool);
 
 		add(title);
 		add(palabra);
@@ -141,34 +154,85 @@ public class GUIprincipal extends JFrame implements ActionListener, MouseListene
 		setVisible(true);
 	}
 	
-	private TableModel modelTable() {
-		DefaultTableModel modelo = new DefaultTableModel() {
-			@Override
-			public boolean isCellEditable(int row, int column) {// Este metodo es para evitar que el usuario edite las
-																// celdas de la tabla
-				return false;
-			}
-		};
+	
+	/**
+	 * metodo que configura lo relacionado con la tabla, recibe un ArrayList<Palabras> como parametro 
+	 * para actualizar el modelo de la tabla de acuerdo a la contidad de elementos del array 
+	 * @param p
+	 */
+	private void confiTabla(ArrayList<Palabra> p) {
+		tablaScrool.setViewportView(tablaPalabras);
+		tablaScrool.setBounds(10, 60, 610, 380);
+	        
+		tablaPalabras.setModel(modelTable(p)); 
+		tablaPalabras.setRowHeight(40);
+		tablaPalabras.addMouseListener(this);
 
-		String[] encabezados = { "Palabra", "Opcion" };
-		modelo.setColumnIdentifiers(encabezados);
+		JTableHeader header = tablaPalabras.getTableHeader();
+		header.setFont(new Font("Arial", Font.BOLD, 20));
+		header.setBackground(Color.gray);
+		header.setForeground(Color.black);
 
-		Object[] fila;
-		for (Palabra palabra : gp.) {
-			fila = new Object[6];
-			fila[0] = imageEscale(new ImageIcon("Resourses\\Icons\\" + pro.getId() + ".png"), 50, 50);
-			fila[1] = pro.getNameProduct();
-			fila[2] = pro.getDescription();
-			fila[3] = pro.getPrice();
-			fila[4] = pro.getStock();
-			fila[5] = imageEscale(new ImageIcon("Resourses\\Icons\\opciones.jfif"), 70, 30);
+		tablaPalabras.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+		tablaPalabras.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+		tablaPalabras.getColumnModel().getColumn(2).setCellRenderer(new JLabelTableCellRender());
+		tablaPalabras.getColumnModel().getColumn(3).setCellRenderer(new JLabelTableCellRender());
+		
+		TableColumn column1 = tablaPalabras.getColumnModel().getColumn(0);
+        column1.setPreferredWidth(100);
 
-			modelo.addRow(fila);
-		}
-		return modelo;
+        // Establecer el ancho de la segunda columna a 150
+        TableColumn column2 = tablaPalabras.getColumnModel().getColumn(1);
+        column2.setPreferredWidth(100);
+
+        // Establecer el ancho de la tercera columna a 200
+        TableColumn column3 = tablaPalabras.getColumnModel().getColumn(2);
+        column3.setPreferredWidth(200);
+
+		TableColumnModel columnModel = tablaPalabras.getColumnModel();
+		columnModel.getColumn(3).setResizable(false);
+		
+	}
+	
+	/**
+	 * metodo que da el modelo de la tabla, recibe un ArrayList<Palabra> para actualizar la tabla
+	 * y retorna el modelo con los elementos presentes en el array
+	 * @param p
+	 * @return TablaModel
+	 */
+	private TableModel modelTable(ArrayList<Palabra> p) {
+	    modeloTabla = new DefaultTableModel() {
+	        @Override
+	        public boolean isCellEditable(int row, int column) {
+	            return false;
+	        }
+	    };
+
+	    String[] encabezados = { "Palabra","Traduccion", "Definicion", "Opcion" };
+	    modeloTabla.setColumnIdentifiers(encabezados);
+
+	    Object[] fila;
+	    for (Palabra palabra : p) {
+	        fila = new Object[4];
+	        fila[0] = palabra.getPalabra();
+	        fila[1] = palabra.getTraduccion();
+	        fila[2] = palabra.getDefinicion();
+	        fila[3] = modificarTamImagen("Recursos/opciones.jpg", 70, 30);
+
+	        modeloTabla.addRow(fila);
+	    }
+	    return modeloTabla;
 	}
 
-	private ImageIcon modificarTamañoImagen(String imagePath, int w, int h) {
+	/**
+	 * metodo para dar tamaño especifico a una imagen, recibe la direccion donde se encuentra alojada la imagen,
+	 * el tamaño y la altura y retorna un elemento de tipo ImageIcon
+	 * @param imagePath
+	 * @param w
+	 * @param h
+	 * @return ImageIcon
+	 */
+	private ImageIcon modificarTamImagen(String imagePath, int w, int h) {
 		ImageIcon originalIcon = new ImageIcon(imagePath);
 
         Image originalImage = originalIcon.getImage();
@@ -179,6 +243,10 @@ public class GUIprincipal extends JFrame implements ActionListener, MouseListene
         return resizedIcon;
 	}
 	
+	/**
+	 * metodo que crea una lista con las letras del abecedario
+	 * @return List<String>
+	 */
 	private static List<String> getAlphabet() {
         List<String> alphabet = new ArrayList();
         for (char letter = 'A'; letter <= 'Z'; letter++) {
@@ -187,19 +255,67 @@ public class GUIprincipal extends JFrame implements ActionListener, MouseListene
         return alphabet;
     }
 	
+	/**
+	 * metoda para comprobar la entrada, Devuelve true si la entrada no tiene numeros o carecteres especiales, de lo contrario, false
+	 * @param input
+	 * @return
+	 */
+	public static boolean validarString(String input) {
+        String regex = "^[\\p{L}\\s]+$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(input);
+        return matcher.matches();
+    }
+	
+	/**
+	 * eventos que van a ocurri cuando el usuario haga click sobre los otones
+	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if((JButton)e.getSource() == buscar) {
-			GUIverPalabra vp = new GUIverPalabra();
-			setVisible(false);
+			if(!buscarpalabra.getText().isEmpty() && buscarpalabra.getText() != null) {
+				if(!validarString(buscarpalabra.getText())) {
+					JOptionPane.showMessageDialog(null, "Ingrese una palabra valida, sin numeros y/o caracteres especiales");
+				}else if(gp.obtenerPalabra(buscarpalabra.getText()) == null ) {
+					JOptionPane.showMessageDialog(null, "Palabra no encontrada");
+					letras.setSelectedItem(letras.getItemAt(0));
+					confiTabla(gp.obtenerPalabras((String)letras.getSelectedItem()));
+				}else {
+					confiTabla(gp.obtenerPalabra(buscarpalabra.getText()));
+				}
+				
+			}else {
+				JOptionPane.showMessageDialog(null, "Ingrese una palabra para buscarla");
+			}
+			buscarpalabra.setText("");
+			
+		}else if((JButton)e.getSource() == agregar) {
+			new GUIagregarPalabra(gp);
+			confiTabla(gp.obtenerPalabras((String)letras.getSelectedItem()));
 		}
-		
 	}
-
+	
+	/**
+	 * evenos que van a ocurrir cuando elusuario haga click sobre la tabla
+	 */
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+		int columna = tablaPalabras.getColumnModel().getColumnIndexAtX(e.getX()); 
+	    int fila = e.getY() / tablaPalabras.getRowHeight();
+	   
+	    if (columna == 3 && fila < tablaPalabras.getRowCount()) { 
+			if(e.getX() > 507 && e.getX() < 534){
+				if(gp.obtenerPalabra(tablaPalabras.getValueAt(fila, 0).toString()) != null) {
+					new GUImodificarPalabra(tablaPalabras.getValueAt(fila, 0).toString(), tablaPalabras.getValueAt(fila, 1).toString(),
+							tablaPalabras.getValueAt(fila, 2).toString(), gp);
+					confiTabla(gp.obtenerPalabras((String)letras.getSelectedItem()));
+				}
+			}else if(e.getX() > 545 && e.getX() < 571) {
+				gp.eliminarPalabra(tablaPalabras.getValueAt(fila, 0).toString());
+				confiTabla(gp.obtenerPalabras((String)letras.getSelectedItem()));
+			}
+			
+		}
 	}
 
 	@Override
